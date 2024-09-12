@@ -2,8 +2,8 @@
 #include <hal_key.h>
 #include <U8g2lib.h>
 #include <Wire.h>
- 
-U8G2_SH1107_PIMORONI_128X128_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE); 
+
+U8G2_SH1107_PIMORONI_128X128_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
 
 #define oled_sda 27
 #define oled_scl 26
@@ -12,8 +12,8 @@ U8G2_SH1107_PIMORONI_128X128_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
 void beep();
 
 // 4x4 距阵键盘
-uint8_t rowspin[4] = {15, 2, 4, 16};  // 行
-uint8_t colspin[4] = {17, 5, 18, 19}; // 列
+uint8_t rowspin[4] = {15, 2, 4, 16};  // 行引脚配置
+uint8_t colspin[4] = {17, 5, 18, 19}; // 列引脚配置
 char keyChar[4][4] = {
     {'1', '2', '3', 'A'},
     {'4', '5', '6', 'B'},
@@ -64,19 +64,8 @@ void keyEvent(uint8_t keyPin, uint8_t eventtype)
   beep();
 }
 
-void setup()
+void oled_init()
 {
-
-  Serial.begin(115200);
-
-  // 以下代码增加两个旋转编码器，并带中间的按压按键
-  hal_multiButton.addButton(22, 23, true, false, keyEvent);
-  hal_multiButton.addButton(21, true, false, keyEvent);
-  hal_multiButton.addButton(32, 33, true, false, keyEvent);
-  hal_multiButton.addButton(25, true, false, keyEvent);
-  // 以下代码增加一个4x4 距阵键盘
-  hal_multiButton.addButton(rowspin, colspin, true, true, keyEvent);
-
   Wire.begin(oled_sda, oled_scl);
   u8g2.setBusClock(1000000); // 硬件IIC接口使用
   u8g2.begin();
@@ -90,7 +79,22 @@ void setup()
   u8g2.drawStr(0, 128, "Bottom Left");
   u8g2.drawStr(93, 128, "Right");
   u8g2.sendBuffer();
+}
 
+void setup()
+{
+
+  Serial.begin(115200);
+
+  // 以下代码增加两个旋转编码器，并带中间的按压按键
+  hal_multiButton.addButton(22, 23, true, false, keyEvent);
+  hal_multiButton.addButton(21, true, false, keyEvent);
+  hal_multiButton.addButton(32, 33, true, false, keyEvent);
+  hal_multiButton.addButton(25, true, false, keyEvent);
+  // 以下代码增加一个4x4 距阵键盘
+  hal_multiButton.addButton(rowspin, colspin, true, true, keyEvent);
+
+  oled_init();
   pinMode(beepPin, OUTPUT);
 }
 
@@ -107,23 +111,6 @@ void beep()
   ledcWrite(channel, dutyCycle); // 设置占空比, 0~255 值越大响度越大
   delayMicroseconds(2000);
   ledcDetachPin(beepPin);
-
-  // loop
-  //  ledcWriteTone(channel, 2000);
-  //  for (int dutyCycle = 0; dutyCycle <= 255; dutyCycle = dutyCycle + 10)
-  //  {
-  //    Serial.println(dutyCycle);
-  //    ledcWrite(channel, dutyCycle);
-  //    delay(1000);
-  //  }
-
-  // ledcWrite(channel, 125);
-  // for (int freq = 255; freq < 10000; freq = freq + 250)
-  // {
-  //   Serial.println(freq);
-  //   ledcWriteTone(channel, freq);
-  //   delay(1000);
-  // }
 }
 
 void loop()
